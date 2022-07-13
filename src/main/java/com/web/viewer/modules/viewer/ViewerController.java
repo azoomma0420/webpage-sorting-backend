@@ -13,9 +13,22 @@ public class ViewerController {
     private final ViewerService viewerService;
 
     @GetMapping(value = {"/data"})
-    public ResponseEntity<?> getData(@RequestParam("url") String url) {
+    public ResponseEntity<?> getData(@RequestParam("url") String url,
+                                     @RequestParam("includeHTML") boolean includeHTML) {
         try {
-            return new ResponseEntity<>(viewerService.getData(url), HttpStatus.OK);
+            return new ResponseEntity<>(viewerService.getData(url, includeHTML), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = {"/data-per-unit"})
+    public ResponseEntity<?> getConversionData(@RequestParam("url") String url,
+                                     @RequestParam("unit") Integer unit,
+                                     @RequestParam("includeHTML") boolean includeHTML) {
+        try {
+            return new ResponseEntity<>(viewerService.getConversionData(url, unit, includeHTML), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
