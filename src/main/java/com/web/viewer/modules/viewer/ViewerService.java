@@ -27,7 +27,7 @@ public class ViewerService {
         String htmlData = getHttpData(url);
         if(!includeHTML) {
             //정규식으로 HTML 태그를 없애준다.
-            htmlData = htmlData.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", "");
+            htmlData = htmlData.replaceAll("<[^>]*>","");
         }
         return htmlData;
     }
