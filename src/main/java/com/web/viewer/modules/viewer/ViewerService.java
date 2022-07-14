@@ -12,7 +12,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,57 +36,63 @@ public class ViewerService {
         String htmlData = getData(url, includeHTML);
 
         //알파벳과 숫자를 가져오고
-        String alphabets = getAlphabets(htmlData);
-        String numbers = getNumbers(htmlData);
+        List<String> alphabets = getAlphabets(htmlData);
+        List<String> numbers = getNumbers(htmlData);
 
         //오름차순 정렬하고
         alphabets = ascending(alphabets);
         numbers = ascending(numbers);
         
         //단위로 쪼개서 교차한다.
-        return mix(alphabets, numbers, unit);
-    }
+        String result = mix(alphabets, numbers, unit);
 
-    private HtmlDataDTO mix(String alphabets, String numbers, Integer unit) {
-        Integer min = Math.min(alphabets.length(), numbers.length());
-        Integer quotient =  min / unit;
-        Integer remainder = min % unit;
-        String result = "";
-        for(int i=0; i< min; i +=unit) {
-            if(i+unit < alphabets.length())
-                result += alphabets.substring(i, i+unit);
-
-            if(i+unit < numbers.length())
-                result += numbers.substring(i, i+unit);
-        }
+        Integer quotient =  (alphabets.size()+numbers.size()) / unit;
+        Integer remainder = (alphabets.size()+numbers.size()) % unit;
         return HtmlDataDTO.builder()
-                    .quotient(quotient)
-                    .remainder(remainder)
-                    .result(result).build();
+                        .quotient(quotient)
+                        .remainder(remainder)
+                        .result(result).build();
     }
 
-    private String ascending(String str) {
-        char[] temp = str.toCharArray();
-        Arrays.sort(temp);
-        return new String(temp);
-    }
-
-    private String getAlphabets(String str) {
+    private String mix(List<String> alphabets, List<String> numbers, Integer unit) {
         String result = "";
-        Matcher matcher = Pattern.compile("[a-zA-Z]").matcher(str);
-        while (matcher.find()) {
-            result += matcher.group();
+        int min = Math.min(alphabets.size(), numbers.size());
+        int remainder = min % unit;
+        for(int i=0; i<(min-remainder); i+=unit) {
+            result += getStringFromList(alphabets, i, unit);
+            result += getStringFromList(numbers, i, unit);
         }
         return result;
     }
 
-    private String getNumbers(String str) {
+    private String getStringFromList(List<String> list, int index, Integer unit) {
+        String result = "";
+        for(int i=index; i<(index+unit); i++) {
+            result += list.get(i);
+        }
+        return result;
+    }
+
+    private List<String> ascending(List<String> list) {
+        Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+        return list;
+    }
+
+    private List<String> getAlphabets(String str) {
+        ArrayList<String> list = new ArrayList<>();
+        Matcher matcher = Pattern.compile("[a-zA-Z]").matcher(str);
+        while (matcher.find()) {
+            list.add(matcher.group());
+        }
+        return list;
+    }
+
+    private List<String> getNumbers(String str) {
         IntStream stream = str.chars();
-        String intStr = stream.filter((ch)-> (48 <= ch && ch <= 57))
+        return stream.filter((ch)-> (48 <= ch && ch <= 57))
                 .mapToObj(ch -> (char)ch)
                 .map(Object::toString)
-                .collect(Collectors.joining());
-        return intStr;
+                .collect(Collectors.toList());
     }
 
     private String getHttpData(String url) throws IOException, HttpCallException{
