@@ -6,7 +6,9 @@ import lombok.Data;
 @Data
 @Builder
 public class HtmlDataDTO {
-    private Integer quotient;
-    private Integer remainder;
-    private String result;
+    private Integer quotientN;
+    private Integer remainderN;
+    private String quotient;
+    private String remainder1;
+    private String remainder2;
 }

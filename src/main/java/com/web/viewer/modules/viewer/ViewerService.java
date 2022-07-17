@@ -42,27 +42,33 @@ public class ViewerService {
         //오름차순 정렬하고
         alphabets = ascending(alphabets);
         numbers = ascending(numbers);
-        
-        //단위로 쪼개서 교차한다.
-        String result = mix(alphabets, numbers, unit);
 
-        Integer quotient =  (alphabets.size()+numbers.size()) / unit;
-        Integer remainder = (alphabets.size()+numbers.size()) % unit;
-        return HtmlDataDTO.builder()
-                        .quotient(quotient)
-                        .remainder(remainder)
-                        .result(result).build();
+        return mix(alphabets, numbers, unit);
     }
 
-    private String mix(List<String> alphabets, List<String> numbers, Integer unit) {
-        String result = "";
+    private HtmlDataDTO mix(List<String> alphabets, List<String> numbers, Integer unit) {
+        String quotient = "";
         int min = Math.min(alphabets.size(), numbers.size());
-        int remainder = min % unit;
-        for(int i=0; i<(min-remainder); i+=unit) {
-            result += getStringFromList(alphabets, i, unit);
-            result += getStringFromList(numbers, i, unit);
+        int re = min % unit;
+
+        for(int i=0; i<(min-re); i+=unit) {
+            quotient += getStringFromList(alphabets, i, unit);
+            quotient += getStringFromList(numbers, i, unit);
         }
-        return result;
+
+        String remainder1 = "";
+        remainder1 += getStringFromList(alphabets, (min-re), re);
+        remainder1 += getStringFromList(numbers, (min-re), re);
+
+        List<String> max = alphabets.size() > numbers.size() ? alphabets : numbers;
+        String remainder2 = getStringFromList(max, min, max.size()-min);
+
+        return HtmlDataDTO.builder()
+                            .quotientN(quotient.length())
+                            .remainderN(remainder1.length())
+                            .quotient(quotient)
+                            .remainder1(remainder1)
+                            .remainder2(remainder2).build();
     }
 
     private String getStringFromList(List<String> list, int index, Integer unit) {
